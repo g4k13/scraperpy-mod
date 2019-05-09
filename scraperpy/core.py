@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 from . import helpers
-import sys, requests, bs4, json, pdb
+import os, sys, pymongo, requests, bs4, json, pdb, feedparser, datetime
+from pymongo import MongoClient
 
-def getBBCArabic(filename=None):
+def postToMongo(dbname, tablename, document, mongourl):
+    client = MongoClient(mongourl)
+    db = client[dbname]
+    db[tablename].insert_one(document)
+
+
+def getBBCArabic(mongourl):
     sourceName = "BBC Arabic"
     sourceUrl = 'http://www.bbc.com/arabic'
     res = requests.get(sourceUrl)
@@ -14,11 +21,12 @@ def getBBCArabic(filename=None):
     for line in headlines:
         results[sourceName]['data'].append({'text': line.getText(), 'href': line.get('href')})
         count += 1
+    postToMongo('bbcarabicscrape', 'scrapes', results, mongourl)
 
-    if filename:
-        lineFile = open(filename, 'w')
-        lineFile.write(json.dumps(results, ensure_ascii=False))
-        lineFile.close()
 
-    return json.dumps(results, ensure_ascii=False)
-
+def getBBCArabicRSS(mongourl):
+    rssurl = "http://feeds.bbci.co.uk/arabic/rss.xml"
+    data = feedparser.parse(rssurl)
+    results = {'title': data.feed.title, 'link': data.feed.link, 'data': data.entries, 'time': datetime.datetime.now().strftime("%I:%M%p %B %d, %Y")}
+    for entry in data.entries:
+        postToMongo('bbcarabicrss', 'articles', entry, mongourl)

@@ -3,3 +3,5 @@ sphinx
 pyperclip
 requests
 bs4
+pymongo
+feedparser
