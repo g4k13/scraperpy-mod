@@ -6,21 +6,16 @@ import sys, os, time
 print(sys.version)
 
 if len(sys.argv) < 1:
-    print("PYG-SCRAPERPY: Generates a news feed from different news websites"
-    print("USAGE: ./pyg-scraperpy <BBCArabic> <directory-to-put-files>")
+    print("PYG-SCRAPERPY: Generates a news feed from different news websites, and posts them to a mongoDB")
+    print("USAGE: ./pyg-scraperpy <BBCArabic|BBCArabicRSS> <url-to-mongo-db>")
 else:
     print("Scraping the latest news from ..." + sys.argv[1])
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    os.makedirs(sys.argv[2], exist_ok=True)
-    filename = os.path.join(sys.argv[2], timestr + '_scraped.txt')
+    mongourl = sys.argv[2]
     if sys.argv[1] == 'BBCArabic':
-        core.getBBCArabic(filename)
+        core.getBBCArabic(mongourl)
+    elif sys.argv[1] == 'BBCArabicRSS':
+        core.getBBCArabicRSS(mongourl)
     else:
         print('Unable to scrape that site yet')
 
 
-
-
-
-#print(core.getBBCArabic())
-#print('works')
